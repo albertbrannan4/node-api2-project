@@ -80,7 +80,7 @@ router.put("/:id", async (req, res) => {
         }
       })
       .then((post) => {
-        res.json(post);
+        if (post) res.json(post);
       })
       .catch(() => {
         res.status(500).json({
