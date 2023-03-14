@@ -56,31 +56,64 @@ router.post("/", async (req, res) => {
   }
 });
 
-// router.put("/:id", async (req, res) => {
-//   const { title, contents } = req.body;
-//   const { id } = req.params;
-//   if (!title || !contents) {
-//     res
-//       .status(400)
-//       .json({ message: "Please provide title and contents for the post" });
-//   } else {
-//     Posts.findById(id)
-//       .then((post) => {
-//         console.log(post);
-//       })
-//       .catch(() => {
-//         res.status(404).json({
-//           message: "The post with the specified ID does not exist",
-//         });
-//       })
+router.put("/:id", async (req, res) => {
+  const { title, contents } = req.body;
+  const { id } = req.params;
+  if (!title || !contents) {
+    res
+      .status(400)
+      .json({ message: "Please provide title and contents for the post" });
+  } else {
+    Posts.findById(id)
+      .then((post) => {
+        if (!post) {
+          res.status(404).json({
+            message: "The post with the specified ID does not exist",
+          });
+        } else {
+          return Posts.update(id, req.body);
+        }
+      })
+      .then((data) => {
+        if (data) {
+          return Posts.findById(id);
+        }
+      })
+      .then((post) => {
+        res.json(post);
+      })
+      .catch(() => {
+        res.status(500).json({
+          message: "The posts information could not be retrieved",
+        });
+      })
 
-//       .catch(() => {
-//         res.status(500).json({
-//           message: "The post information could not be modified",
-//         });
-//       });
-//   }
-// });
+      .catch(() => {
+        res.status(500).json({
+          message: "The post information could not be modified",
+        });
+      });
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const validPost = await Posts.findById(id);
+    if (!validPost) {
+      res.status(404).json({
+        message: "The post with the specified ID does not exist",
+      });
+    } else {
+      await Posts.remove(id);
+      res.json(validPost);
+    }
+  } catch (err) {
+    res.status(505).json({
+      message: "The post could not be removed",
+    });
+  }
+});
 
 router.get("/:id/comments", async (req, res) => {
   const { id } = req.params;
